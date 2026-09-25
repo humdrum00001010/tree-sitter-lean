@@ -3140,3 +3140,79 @@ Struct update with punned field
       (struct_field
         name: (identifier)
         value: (num_lit)))))
+
+===========================
+Do match with mutation
+===========================
+
+def lowestCost := Id.run do
+  let mut best := none
+  match best with
+  | none => best := some 1
+  | some previous =>
+    if previous > 0 then
+      best := some previous
+  return best
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (app
+        fn: (identifier)
+        arg: (do_block
+          stmt: (let
+            name: (identifier)
+            value: (identifier))
+          stmt: (match
+            scrutinee: (identifier)
+            (match_alt
+              pattern: (identifier)
+              body: (block_assign
+                name: (identifier)
+                value: (app
+                  fn: (identifier)
+                  arg: (num_lit))))
+            (match_alt
+              pattern: (app
+                fn: (identifier)
+                arg: (identifier))
+              body: (do_if
+                cond: (binary_op
+                  lhs: (identifier)
+                  rhs: (num_lit))
+                body: (block_assign
+                  name: (identifier)
+                  value: (app
+                    fn: (identifier)
+                    arg: (identifier))))))
+          stmt: (app
+            fn: (identifier)
+            arg: (identifier)))))))
+
+=========================
+Let guard in do statement
+=========================
+
+def consume := do
+  let some x := getValue | continue
+  return x
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (let
+          name: (identifier)
+          (binders
+            (identifier))
+          value: (identifier)
+          fallback: (identifier))
+        stmt: (app
+          fn: (identifier)
+          arg: (identifier))))))

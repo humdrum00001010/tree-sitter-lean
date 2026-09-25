@@ -68,6 +68,7 @@ export default grammar({
        (`method args := body`) or the singleton-set `{ app args }`. We
        always prefer the struct_field when followed by `:=`. */
     [$.struct_field, $._term_atom],
+    [$.block_assign, $._term_atom],
     /* `{ a, b ... }` could be a set literal (`elem` list) or the
        multi-source struct update `{ src₁, src₂ with … }`. `with`
        one token after disambiguates. */
@@ -1516,6 +1517,7 @@ export default grammar({
       optional($._type_spec),
       choice(':=', '←', '<-'),
       field('value', $._term),
+      optional(seq('|', field('fallback', $._term))),
       optional(seq(';', field('body', $._term))),
     )),
 
@@ -1592,6 +1594,20 @@ export default grammar({
       field('else', $._term),
     )),
 
+    /* `if cond then stmt` is valid in do-style match arms, where the
+       missing else branch has type Unit. */
+    do_if: $ => prec.right(seq(
+      'if',
+      field('cond', $._term),
+      'then',
+      field('body', choice($.block_assign, $.do_return)),
+    )),
+
+    do_return: $ => seq(
+      'return',
+      field('value', $._term),
+    ),
+
     /*
      * `by` and `do` accept either a single inline term or an
      * indent-delimited block of `;`/newline-separated terms.
@@ -1616,7 +1632,7 @@ export default grammar({
       prec.right(sep1(field('inline', $._term), ';')),
       seq(
         $._indent,
-        sep1(field('stmt', choice($.block_assign, $._term)),
+        sep1(field('stmt', choice($.block_assign, $.do_if, $._term)),
              choice(';', $._newline)),
         $._dedent,
       ),
@@ -1640,7 +1656,7 @@ export default grammar({
       sep1(field('pattern', $._term), ','),
       /* Mathlib prefers `↦` over `=>` in match arms. */
       choice('=>', '↦'),
-      field('body', $._term),
+      field('body', choice($._term, $.block_assign, $.do_if)),
     ),
 
     /* `case name args => body` — Lean tactic-language case selection
