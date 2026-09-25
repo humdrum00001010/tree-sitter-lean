@@ -7,13 +7,14 @@ It compiles with the installed Lean 4.34.1 toolchain and the Lean LSP returns
 semantic tokens for the file, including `lowerCost`, its parameters, and the
 match-arm locals. No Lean LSP fork is needed.
 
-The old grammar revision pinned by the Zed extension lost declaration
-structure after valid `do` syntax it did not model. In particular, it could
-not parse `if condition then` without `else` in a `do` body, assignments in
-`match` arms, or `let pat := value | continue`. Later definitions became
-children of a broad `ERROR` node, so the extension's declaration/type captures
-never ran for them. The extension query also had obsolete node names for the
-newer grammar.
+The central grammar rule is `match_alt` in `grammar.js`: it defines the body
+after `| pattern =>`. The old version only accepted `_term` there, but Lean
+also allows do-style assignments and `if condition then` without `else`.
+Those valid bodies became parse errors and later definitions lost their parse
+context. `do_if` handles the conditional body; the `let` rule handles
+`let pat := value | continue`. The Zed query then captures `def` names,
+`explicit_binder`/`implicit_binder` types and variables, and local `let` names.
+It also had to be updated from the old grammar's node and field names.
 
 ## Changes in this fork
 
