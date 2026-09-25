@@ -37,9 +37,6 @@ on `humdrum00001010/tree-sitter-lean` `main`.
   function names, applied and arrow types, and local names in the previously
   affected definitions.
 - `lean StereoMatching.lean`: succeeds.
-- `pnpm test` still fails in the repository's existing Node binding test:
-  `binding_test.js` uses CommonJS `require` while `package.json` sets
-  `"type": "module"`. This was not changed.
 
 ## Remaining parser issue and cost
 
