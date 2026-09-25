@@ -8664,7 +8664,7 @@
                 "name": "inline",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "_term"
+                  "name": "_do_stmt"
                 }
               },
               {
@@ -8681,7 +8681,7 @@
                       "name": "inline",
                       "content": {
                         "type": "SYMBOL",
-                        "name": "_term"
+                        "name": "_do_stmt"
                       }
                     }
                   ]
@@ -8691,87 +8691,640 @@
           }
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "_indent"
-            },
-            {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "FIELD",
-                  "name": "stmt",
-                  "content": {
+          "type": "SYMBOL",
+          "name": "_indented_block"
+        }
+      ]
+    },
+    "_indented_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "_indent"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "FIELD",
+                    "name": "stmt",
+                    "content": {
+                      "type": "CHOICE",
+                      "members": [
+                        {
+                          "type": "SYMBOL",
+                          "name": "do_for_inline"
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "block_assign"
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "do_if"
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "_term"
+                        }
+                      ]
+                    }
+                  },
+                  {
                     "type": "CHOICE",
                     "members": [
                       {
-                        "type": "SYMBOL",
-                        "name": "block_assign"
+                        "type": "STRING",
+                        "value": ";"
                       },
                       {
                         "type": "SYMBOL",
-                        "name": "do_if"
-                      },
-                      {
-                        "type": "SYMBOL",
-                        "name": "_term"
+                        "name": "_newline"
                       }
                     ]
                   }
-                },
-                {
-                  "type": "REPEAT",
-                  "content": {
+                ]
+              },
+              {
+                "type": "FIELD",
+                "name": "stmt",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "do_for"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "stmt",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_do_stmt"
+          }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_dedent"
+        }
+      ]
+    },
+    "_do_stmt": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "do_for"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "do_for_inline"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "block_assign"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "do_if"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_term"
+        }
+      ]
+    },
+    "do_for": {
+      "type": "PREC_RIGHT",
+      "value": 1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "for"
+              },
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
                     "type": "SEQ",
                     "members": [
                       {
                         "type": "CHOICE",
                         "members": [
                           {
-                            "type": "STRING",
-                            "value": ";"
+                            "type": "SEQ",
+                            "members": [
+                              {
+                                "type": "FIELD",
+                                "name": "proof",
+                                "content": {
+                                  "type": "SYMBOL",
+                                  "name": "identifier"
+                                }
+                              },
+                              {
+                                "type": "STRING",
+                                "value": ":"
+                              }
+                            ]
                           },
                           {
-                            "type": "SYMBOL",
-                            "name": "_newline"
+                            "type": "BLANK"
                           }
                         ]
                       },
                       {
                         "type": "FIELD",
-                        "name": "stmt",
+                        "name": "pattern",
                         "content": {
                           "type": "CHOICE",
                           "members": [
                             {
                               "type": "SYMBOL",
-                              "name": "block_assign"
+                              "name": "_binder_ident"
                             },
                             {
                               "type": "SYMBOL",
-                              "name": "do_if"
+                              "name": "tuple_binder"
                             },
                             {
                               "type": "SYMBOL",
-                              "name": "_term"
+                              "name": "anon_ctor_binder"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "STRING",
+                        "value": "in"
+                      },
+                      {
+                        "type": "FIELD",
+                        "name": "iterable",
+                        "content": {
+                          "type": "CHOICE",
+                          "members": [
+                            {
+                              "type": "SYMBOL",
+                              "name": "identifier"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "app"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "array_lit"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "range_lit"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "CHOICE",
+                            "members": [
+                              {
+                                "type": "SEQ",
+                                "members": [
+                                  {
+                                    "type": "FIELD",
+                                    "name": "proof",
+                                    "content": {
+                                      "type": "SYMBOL",
+                                      "name": "identifier"
+                                    }
+                                  },
+                                  {
+                                    "type": "STRING",
+                                    "value": ":"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "BLANK"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "FIELD",
+                            "name": "pattern",
+                            "content": {
+                              "type": "CHOICE",
+                              "members": [
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "_binder_ident"
+                                },
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "tuple_binder"
+                                },
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "anon_ctor_binder"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "in"
+                          },
+                          {
+                            "type": "FIELD",
+                            "name": "iterable",
+                            "content": {
+                              "type": "SYMBOL",
+                              "name": "identifier"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "REPEAT1",
+                        "content": {
+                          "type": "SEQ",
+                          "members": [
+                            {
+                              "type": "STRING",
+                              "value": ","
+                            },
+                            {
+                              "type": "SEQ",
+                              "members": [
+                                {
+                                  "type": "CHOICE",
+                                  "members": [
+                                    {
+                                      "type": "SEQ",
+                                      "members": [
+                                        {
+                                          "type": "FIELD",
+                                          "name": "proof",
+                                          "content": {
+                                            "type": "SYMBOL",
+                                            "name": "identifier"
+                                          }
+                                        },
+                                        {
+                                          "type": "STRING",
+                                          "value": ":"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "BLANK"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "FIELD",
+                                  "name": "pattern",
+                                  "content": {
+                                    "type": "CHOICE",
+                                    "members": [
+                                      {
+                                        "type": "SYMBOL",
+                                        "name": "_binder_ident"
+                                      },
+                                      {
+                                        "type": "SYMBOL",
+                                        "name": "tuple_binder"
+                                      },
+                                      {
+                                        "type": "SYMBOL",
+                                        "name": "anon_ctor_binder"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "STRING",
+                                  "value": "in"
+                                },
+                                {
+                                  "type": "FIELD",
+                                  "name": "iterable",
+                                  "content": {
+                                    "type": "SYMBOL",
+                                    "name": "identifier"
+                                  }
+                                }
+                              ]
                             }
                           ]
                         }
                       }
                     ]
                   }
+                ]
+              },
+              {
+                "type": "STRING",
+                "value": "do"
+              }
+            ]
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_indented_block"
+          }
+        ]
+      }
+    },
+    "do_for_inline": {
+      "type": "PREC_RIGHT",
+      "value": 1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "for"
+              },
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "CHOICE",
+                        "members": [
+                          {
+                            "type": "SEQ",
+                            "members": [
+                              {
+                                "type": "FIELD",
+                                "name": "proof",
+                                "content": {
+                                  "type": "SYMBOL",
+                                  "name": "identifier"
+                                }
+                              },
+                              {
+                                "type": "STRING",
+                                "value": ":"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "BLANK"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "FIELD",
+                        "name": "pattern",
+                        "content": {
+                          "type": "CHOICE",
+                          "members": [
+                            {
+                              "type": "SYMBOL",
+                              "name": "_binder_ident"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "tuple_binder"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "anon_ctor_binder"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "STRING",
+                        "value": "in"
+                      },
+                      {
+                        "type": "FIELD",
+                        "name": "iterable",
+                        "content": {
+                          "type": "CHOICE",
+                          "members": [
+                            {
+                              "type": "SYMBOL",
+                              "name": "identifier"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "app"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "array_lit"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "range_lit"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "CHOICE",
+                            "members": [
+                              {
+                                "type": "SEQ",
+                                "members": [
+                                  {
+                                    "type": "FIELD",
+                                    "name": "proof",
+                                    "content": {
+                                      "type": "SYMBOL",
+                                      "name": "identifier"
+                                    }
+                                  },
+                                  {
+                                    "type": "STRING",
+                                    "value": ":"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "BLANK"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "FIELD",
+                            "name": "pattern",
+                            "content": {
+                              "type": "CHOICE",
+                              "members": [
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "_binder_ident"
+                                },
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "tuple_binder"
+                                },
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "anon_ctor_binder"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "STRING",
+                            "value": "in"
+                          },
+                          {
+                            "type": "FIELD",
+                            "name": "iterable",
+                            "content": {
+                              "type": "SYMBOL",
+                              "name": "identifier"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "REPEAT1",
+                        "content": {
+                          "type": "SEQ",
+                          "members": [
+                            {
+                              "type": "STRING",
+                              "value": ","
+                            },
+                            {
+                              "type": "SEQ",
+                              "members": [
+                                {
+                                  "type": "CHOICE",
+                                  "members": [
+                                    {
+                                      "type": "SEQ",
+                                      "members": [
+                                        {
+                                          "type": "FIELD",
+                                          "name": "proof",
+                                          "content": {
+                                            "type": "SYMBOL",
+                                            "name": "identifier"
+                                          }
+                                        },
+                                        {
+                                          "type": "STRING",
+                                          "value": ":"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "BLANK"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "FIELD",
+                                  "name": "pattern",
+                                  "content": {
+                                    "type": "CHOICE",
+                                    "members": [
+                                      {
+                                        "type": "SYMBOL",
+                                        "name": "_binder_ident"
+                                      },
+                                      {
+                                        "type": "SYMBOL",
+                                        "name": "tuple_binder"
+                                      },
+                                      {
+                                        "type": "SYMBOL",
+                                        "name": "anon_ctor_binder"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "STRING",
+                                  "value": "in"
+                                },
+                                {
+                                  "type": "FIELD",
+                                  "name": "iterable",
+                                  "content": {
+                                    "type": "SYMBOL",
+                                    "name": "identifier"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "STRING",
+                "value": "do"
+              }
+            ]
+          },
+          {
+            "type": "FIELD",
+            "name": "body",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "block_assign"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "do_if"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "_op_term"
                 }
               ]
-            },
-            {
-              "type": "SYMBOL",
-              "name": "_dedent"
             }
-          ]
-        }
-      ]
+          }
+        ]
+      }
     },
     "block_assign": {
       "type": "SEQ",

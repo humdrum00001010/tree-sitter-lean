@@ -2300,6 +2300,236 @@ example := by
           fn: (identifier)
           arg: (identifier))))))
 
+===========================
+For with a projected collection and inline body
+===========================
+
+def collect := do
+  for item in source.items do consume item
+  return 0
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (do_for_inline
+          pattern: (identifier)
+          iterable: (identifier)
+          body: (app
+            fn: (identifier)
+            arg: (identifier)))
+        stmt: (app
+          fn: (identifier)
+          arg: (num_lit))))))
+
+===========================
+Nested for statements
+===========================
+
+def collect := do
+  for row in rows do
+    for item in row do
+      consume item
+    consume row
+  return 0
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (do_for
+          pattern: (identifier)
+          iterable: (identifier)
+          stmt: (do_for
+            pattern: (identifier)
+            iterable: (identifier)
+            stmt: (app
+              fn: (identifier)
+              arg: (identifier)))
+          stmt: (app
+            fn: (identifier)
+            arg: (identifier)))
+        stmt: (app
+          fn: (identifier)
+          arg: (num_lit))))))
+
+===========================
+For with an array collection
+===========================
+
+def collect := do
+  for item in #[1, 2] do
+    consume item
+  return 0
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (do_for
+          pattern: (identifier)
+          iterable: (array_lit
+            (num_lit)
+            (num_lit))
+          stmt: (app
+            fn: (identifier)
+            arg: (identifier)))
+        stmt: (app
+          fn: (identifier)
+          arg: (num_lit))))))
+
+===========================
+For with an applied collection
+===========================
+
+def collect := do
+  for item in loadItems cfg do
+    consume item
+  return 0
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (do_for
+          pattern: (identifier)
+          iterable: (app
+            fn: (identifier)
+            arg: (identifier))
+          stmt: (app
+            fn: (identifier)
+            arg: (identifier)))
+        stmt: (app
+          fn: (identifier)
+          arg: (num_lit))))))
+
+===========================
+For with tuple binding and parallel collections
+===========================
+
+def collect := do
+  for (key, value) in pairs, i in indices do
+    consume key
+  return 0
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (do_for
+          pattern: (tuple_binder
+            (identifier)
+            (identifier))
+          iterable: (identifier)
+          pattern: (identifier)
+          iterable: (identifier)
+          stmt: (app
+            fn: (identifier)
+            arg: (identifier)))
+        stmt: (app
+          fn: (identifier)
+          arg: (num_lit))))))
+
+===========================
+For with tuple binding
+===========================
+
+def collect := do
+  for (key, value) in pairs do
+    consume key
+  return 0
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (do_for
+          pattern: (tuple_binder
+            (identifier)
+            (identifier))
+          iterable: (identifier)
+          stmt: (app
+            fn: (identifier)
+            arg: (identifier)))
+        stmt: (app
+          fn: (identifier)
+          arg: (num_lit))))))
+
+===========================
+For with parallel collections
+===========================
+
+def collect := do
+  for key in pairs, i in indices do
+    consume key
+  return 0
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (do_for
+          pattern: (identifier)
+          iterable: (identifier)
+          pattern: (identifier)
+          iterable: (identifier)
+          stmt: (app
+            fn: (identifier)
+            arg: (identifier)))
+        stmt: (app
+          fn: (identifier)
+          arg: (num_lit))))))
+
+===========================
+For with membership proof and range
+===========================
+
+def collect := do
+  for h : i in [0:xs.size] do
+    consume i
+  return 0
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (do_for
+          proof: (identifier)
+          pattern: (identifier)
+          iterable: (range_lit
+            start: (num_lit)
+            stop: (identifier))
+          stmt: (app
+            fn: (identifier)
+            arg: (identifier)))
+        stmt: (app
+          fn: (identifier)
+          arg: (num_lit))))))
+
 ==============
 Where with elision marker
 ==============
@@ -3213,6 +3443,103 @@ def consume := do
             (identifier))
           value: (identifier)
           fallback: (identifier))
+        stmt: (app
+          fn: (identifier)
+          arg: (identifier))))))
+
+===========================
+For statement in a do block
+===========================
+
+def collect := do
+  let mut results := #[]
+  for reference in selectedPixels do
+    let some depth := lidarDepth reference | continue
+    let some uncertainty := depthUncertainty reference | continue
+    let some range := disparityRangeFromLiDAR
+      focalPixels baselineMeters depth uncertainty | continue
+    let some winner := searchDisparity range (scorePatch reference) | continue
+    results := results.push {
+      reference := reference
+      source := projectRectified reference winner.disparity
+      cost := winner.cost
+    }
+  return results
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (do_block
+        stmt: (let
+          name: (identifier)
+          value: (array_lit))
+        stmt: (do_for
+          pattern: (identifier)
+          iterable: (identifier)
+          stmt: (let
+            name: (identifier)
+            (binders
+              (identifier))
+            value: (app
+              fn: (identifier)
+              arg: (identifier))
+            fallback: (identifier))
+          stmt: (let
+            name: (identifier)
+            (binders
+              (identifier))
+            value: (app
+              fn: (identifier)
+              arg: (identifier))
+            fallback: (identifier))
+          stmt: (let
+            name: (identifier)
+            (binders
+              (identifier))
+            value: (app
+              fn: (app
+                fn: (app
+                  fn: (app
+                    fn: (identifier)
+                    arg: (identifier))
+                  arg: (identifier))
+                arg: (identifier))
+              arg: (identifier))
+            fallback: (identifier))
+          stmt: (let
+            name: (identifier)
+            (binders
+              (identifier))
+            value: (app
+              fn: (app
+                fn: (identifier)
+                arg: (identifier))
+              arg: (paren
+                (app
+                  fn: (identifier)
+                  arg: (identifier))))
+            fallback: (identifier))
+          stmt: (block_assign
+            name: (identifier)
+            value: (app
+              fn: (identifier)
+              arg: (struct_lit
+                (struct_field
+                  name: (identifier)
+                  value: (identifier))
+                (struct_field
+                  name: (identifier)
+                  value: (app
+                    fn: (app
+                      fn: (identifier)
+                      arg: (identifier))
+                    arg: (identifier)))
+                (struct_field
+                  name: (identifier)
+                  value: (identifier))))))
         stmt: (app
           fn: (identifier)
           arg: (identifier))))))

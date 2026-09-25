@@ -32,6 +32,23 @@ const PREC = {
 
 const sep1 = (rule, sep) => seq(rule, repeat(seq(sep, rule)));
 const sep0 = (rule, sep) => optional(sep1(rule, sep));
+const forClause = ($, iterable) => seq(
+  optional(seq(field('proof', $.identifier), ':')),
+  field('pattern', choice($._binder_ident, $.tuple_binder, $.anon_ctor_binder)),
+  'in',
+  field('iterable', iterable),
+);
+const forHeader = $ => seq(
+  'for',
+  choice(
+    forClause($, choice($.identifier, $.app, $.array_lit, $.range_lit)),
+    /* In repeated clauses, a term can swallow the final `do` as an
+       application argument; named collections keep the boundary clear. */
+    seq(forClause($, $.identifier),
+        repeat1(seq(',', forClause($, $.identifier)))),
+  ),
+  'do',
+);
 
 export default grammar({
   name: 'lean',
@@ -1618,10 +1635,9 @@ export default grammar({
      * parser.c to 10MB. Tooling can still recognize specific tactic
      * vocabulary by inspecting the head identifier of an `app` node.
      *
-     * The grammar accepts `let mut`, `←`/`<-` (bind), and `for`/`while`
-     * /`return` etc. by virtue of those being valid Lean syntax that
-     * the term-tier rules already cover (via `let`, the `for` keyword
-     * inside ranges, etc.). Coverage is approximate but far cheaper.
+     * The grammar accepts `let mut`, `←`/`<-` (bind), and many other
+     * do statements through the term-tier rules. `for` has a dedicated
+     * rule so its `do` body remains nested under the loop.
      */
     by: $ => seq('by', $._block_body),
     do_block: $ => seq('do', $._block_body),
@@ -1629,14 +1645,35 @@ export default grammar({
     _block_body: $ => choice(
       /* Inline `by tac; tac` and `do x; y` — multiple tactics
          separated by semicolons, all on one line. */
-      prec.right(sep1(field('inline', $._term), ';')),
-      seq(
-        $._indent,
-        sep1(field('stmt', choice($.block_assign, $.do_if, $._term)),
-             choice(';', $._newline)),
-        $._dedent,
-      ),
+      prec.right(sep1(field('inline', $._do_stmt), ';')),
+      $._indented_block,
     ),
+
+    _indented_block: $ => seq(
+      $._indent,
+      repeat(choice(
+        seq(field('stmt', choice($.do_for_inline, $.block_assign, $.do_if, $._term)),
+            choice(';', $._newline)),
+        /* A nested loop's DEDENT consumes the following newline. */
+        field('stmt', $.do_for),
+      )),
+      field('stmt', $._do_stmt),
+      $._dedent,
+    ),
+
+    _do_stmt: $ => choice($.do_for, $.do_for_inline, $.block_assign, $.do_if, $._term),
+
+    /* Collection headers accept named, applied, array, and range terms
+       without pulling every operator expression into the loop state. */
+    do_for: $ => prec.right(1, seq(
+      forHeader($),
+      $._indented_block,
+    )),
+
+    do_for_inline: $ => prec.right(1, seq(
+      forHeader($),
+      field('body', choice($.block_assign, $.do_if, $._op_term)),
+    )),
 
     /* `x := v` mutation, valid only inside a do-block. */
     block_assign: $ => seq(
